@@ -33,4 +33,6 @@ LIMIT 1;
 >>> with절의 사용방법 익히기
 
 
-![2주차 인증](DBJG/images/ii.png)
+
+![ㅇ](./images/ii.png)
+
