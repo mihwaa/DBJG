@@ -184,9 +184,9 @@ https://github.com/yousrchive/BUSINESS-INTELLIGENCE-TABLEAU/blob/main/study/img/
 ```js
 레퍼런스와 꼭 같지 않아도 자유롭게 표현하고, 그 과정을 기술해주세요.
 ```
-
+![마지막예제](./images/마지막예제.png)
 ```
-여기에 답을 적어주세요!
+국가에 먼저 필터를 걸고, 수익과 매출을 이중 축으로 합쳤으며, 날짜는 월로 변경 후 축 동기화를 해주었다.
 ```
 
 ### 참고 자료
