@@ -1,3 +1,17 @@
+영상 요약  
+pivot과 unpivot
+pivot은 모니터로 치면 세로로 돌리는 것과 같다.  
+
+피벗은 왜 필요한가?  
+데이터의 형태를 생각해보아야 한다.  
+보기 편한 데이터 / 집계함수를 쓸 수 있는 데이터 형태가 다르다!  
+
+pivot > 행을 열로 바꾼다.  
+![1번](./images/pivot1.png)
+
+전치행렬과는 다른 개념이다.  
+
+
 
 1번
 ```
@@ -21,6 +35,12 @@ FROM (SELECT CASE WHEN Occupation = 'Doctor' THEN Name END AS Doctor,
 GROUP BY RowNumber;
 
 ```
+아직 정확히 모르겠지만...  
+피벗으로 하는 것보다 case when으로 보니까 좀 더 직관적이었다.
+(@A:=@A+1) 이런 식으로 row index를 매겨서 합쳐주는 방식을 알게 된 것 같다.
+구현해내는 데에는 실패했다...
+
+
 
 2번
 칼럼 요약
@@ -83,4 +103,40 @@ SET
    특정 재품을 재구매 (카운트 2 이상)을 의미한다.
    
 2. 이 문제에서 사용될 수 있는 성능을 최적화하기 위한 방법은 무엇일까요?
+
+계산값을 미리 저장해두고 나중에 사용하는 방법을 활용할 수 있을 것 같다.
+
+```
+WITH customer_orders AS (
+    SELECT 
+        o.customer_id,
+        od.product_id,
+        SUM(od.quantity * od.unit_price) AS total_spent,
+        AVG(od.quantity * od.unit_price) AS avg_order_value,
+        COUNT(DISTINCT o.order_id) AS num_orders
+    FROM order_details od
+    JOIN orders o ON od.order_id = o.order_id
+    GROUP BY o.customer_id, od.product_id
+),
+repurchase_info AS (
+    SELECT
+        customer_id,
+        COUNT(DISTINCT CASE WHEN COUNT(product_id) > 1 THEN product_id END) OVER (PARTITION BY customer_id) AS repurchase_count,
+        COUNT(DISTINCT product_id) OVER (PARTITION BY customer_id) AS unique_products
+    FROM order_details od
+    JOIN orders o ON od.order_id = o.order_id
+    GROUP BY customer_id, product_id
+)
+UPDATE customers c
+SET
+    avg_order_value = (SELECT avg_order_value FROM customer_orders co WHERE co.customer_id = c.customer_id),
+    total_spent = (SELECT total_spent FROM customer_orders co WHERE co.customer_id = c.customer_id),
+    num_orders = (SELECT num_orders FROM customer_orders co WHERE co.customer_id = c.customer_id),
+    repurchase_rate = (
+        SELECT 
+            COALESCE(repurchase_count * 1.0 / unique_products, 0)
+        FROM repurchase_info ri
+        WHERE ri.customer_id = c.customer_id
+    );
+```
    
